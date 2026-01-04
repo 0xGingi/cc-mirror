@@ -8,7 +8,6 @@ import * as core from '../../core/index.js';
 import type { ParsedArgs } from '../args.js';
 import { prompt } from '../prompt.js';
 import {
-  buildShareUrl,
   printSummary,
   getModelOverridesFromArgs,
   ensureModelMapping,
@@ -76,7 +75,9 @@ async function prepareCreateParams(opts: ParsedArgs): Promise<CreateParams> {
   const npmPackage = (opts['npm-package'] as string) || core.DEFAULT_NPM_PACKAGE;
   const extraEnv = buildExtraEnv(opts);
   const requiresCredential = !provider.credentialOptional;
-  const shouldPromptApiKey = !opts.yes && !hasApiKeyFlag && (providerKey === 'zai' ? !hasZaiEnv : !apiKey);
+  // Don't prompt for API key if credential is optional (mirror, ccrouter)
+  const shouldPromptApiKey =
+    !provider.credentialOptional && !opts.yes && !hasApiKeyFlag && (providerKey === 'zai' ? !hasZaiEnv : !apiKey);
 
   return {
     provider,
@@ -148,9 +149,10 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
+    enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
-  const shareUrl = buildShareUrl(provider.label || params.providerKey, params.name, result.meta.promptPackMode);
   const modelNote = formatModelNote(resolvedModelOverrides);
   const notes = [...(result.notes || []), ...(modelNote ? [modelNote] : [])];
   printSummary({
@@ -158,7 +160,6 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
     meta: result.meta,
     wrapperPath: result.wrapperPath,
     notes: notes.length > 0 ? notes : undefined,
-    shareUrl,
   });
 }
 
@@ -229,9 +230,10 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
+    enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
-  const shareUrl = buildShareUrl(provider.label || params.providerKey, result.meta.name, result.meta.promptPackMode);
   const modelNote = formatModelNote(resolvedModelOverrides);
   const notes = [...(result.notes || []), ...(modelNote ? [modelNote] : [])];
   printSummary({
@@ -239,7 +241,6 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
     meta: result.meta,
     wrapperPath: result.wrapperPath,
     notes: notes.length > 0 ? notes : undefined,
-    shareUrl,
   });
 }
 
@@ -247,7 +248,6 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
  * Handle non-interactive mode creation (--yes flag)
  */
 async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams): Promise<void> {
-  const { provider } = params;
   const promptPack = opts['no-prompt-pack'] ? false : undefined;
   const promptPackMode = parsePromptPackMode(opts['prompt-pack-mode'] as string | undefined);
   const skillInstall = opts['no-skill-install'] ? false : undefined;
@@ -278,9 +278,10 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
+    enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
-  const shareUrl = buildShareUrl(provider.label || params.providerKey, result.meta.name, result.meta.promptPackMode);
   const modelNote = formatModelNote(resolvedModelOverrides);
   const notes = [...(result.notes || []), ...(modelNote ? [modelNote] : [])];
   printSummary({
@@ -288,7 +289,6 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
     meta: result.meta,
     wrapperPath: result.wrapperPath,
     notes: notes.length > 0 ? notes : undefined,
-    shareUrl,
   });
 }
 
