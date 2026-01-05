@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { installOrchestratorSkill } from '../../skills.js';
+import { copyTeamPackPrompts, configureTeamToolset } from '../../../team-pack/index.js';
 import type { BuildContext, BuildStep } from '../types.js';
 
 // The minified function that controls team mode
@@ -79,7 +80,7 @@ export class TeamModeStep implements BuildStep {
       return;
     }
 
-    // Add team env vars to settings.json
+    // Add team env vars and permissions to settings.json
     const settingsPath = path.join(paths.configDir, 'settings.json');
     if (fs.existsSync(settingsPath)) {
       try {
@@ -92,6 +93,14 @@ export class TeamModeStep implements BuildStep {
         if (!settings.env.CLAUDE_CODE_AGENT_TYPE) {
           settings.env.CLAUDE_CODE_AGENT_TYPE = 'team-lead';
         }
+
+        // Add orchestration skill to auto-approve list
+        settings.permissions = settings.permissions || {};
+        settings.permissions.allow = settings.permissions.allow || [];
+        if (!settings.permissions.allow.includes('Skill(orchestration)')) {
+          settings.permissions.allow.push('Skill(orchestration)');
+        }
+
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
       } catch {
         state.notes.push('Warning: Could not update settings.json with team env vars');
@@ -106,6 +115,19 @@ export class TeamModeStep implements BuildStep {
       state.notes.push('Multi-agent orchestrator skill installed');
     } else if (skillResult.status === 'failed') {
       state.notes.push(`Warning: orchestrator skill install failed: ${skillResult.message}`);
+    }
+
+    // Copy team pack prompt files
+    const systemPromptsDir = path.join(paths.tweakDir, 'system-prompts');
+    const copiedFiles = copyTeamPackPrompts(systemPromptsDir);
+    if (copiedFiles.length > 0) {
+      state.notes.push(`Team pack prompts installed (${copiedFiles.join(', ')})`);
+    }
+
+    // Configure TweakCC toolset to block TodoWrite
+    const tweakccConfigPath = path.join(paths.tweakDir, 'config.json');
+    if (configureTeamToolset(tweakccConfigPath)) {
+      state.notes.push('Team toolset configured (TodoWrite blocked)');
     }
   }
 }

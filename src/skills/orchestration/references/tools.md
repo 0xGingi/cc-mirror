@@ -38,71 +38,115 @@
 └──────────────────────────────────────────────────┘
 ```
 
-### Anatomy of Excellent Questions
+### The Maximal Philosophy
 
-```python
-AskUserQuestion(questions=[
-    {
-        "question": "What's the primary goal for this feature?",
-        "header": "Goal",           # Short label (max 12 chars)
-        "options": [
-            {
-                "label": "Performance (Recommended)",
-                "description": "Optimize for speed. Best when handling high traffic."
-            },
-            {
-                "label": "Simplicity",
-                "description": "Keep it straightforward. Easier to maintain long-term."
-            },
-            {
-                "label": "Flexibility",
-                "description": "Make it configurable. Good when requirements may change."
-            }
-        ],
-        "multiSelect": False        # True if multiple can be selected
-    }
-])
+```
+┌──────────────────────────────────────────────────┐
+│                                                  │
+│   GO MAXIMAL                                     │
+│                                                  │
+│   • 4 questions when gathering context           │
+│   • 4 options per question                       │
+│   • RICH descriptions (no length limit!)         │
+│   • Creative options they haven't considered     │
+│   • Cover every relevant dimension               │
+│   • Be a consultant, not a waiter                │
+│                                                  │
+│   Descriptions can be full sentences,            │
+│   explain trade-offs, give examples,             │
+│   mention implications. GO DEEP.                 │
+│                                                  │
+│   Users don't know what they want until          │
+│   they see the options. Surface dimensions       │
+│   they haven't thought about.                    │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
-### The Golden Rules
+### Golden Rules
 
-| Rule                            | Why                                                      |
-| ------------------------------- | -------------------------------------------------------- |
-| **2-4 options per question**    | Too few = not helpful. Too many = overwhelming.          |
-| **Recommended first**           | Guide users toward the best choice with "(Recommended)"  |
-| **Rich descriptions**           | Help users make informed decisions quickly               |
-| **Multiple questions together** | Gather all context upfront, then execute with confidence |
-| **Never text menus**            | Always use the tool. No exceptions.                      |
+| Rule                           | Why                                                     |
+| ------------------------------ | ------------------------------------------------------- |
+| **4 questions when unclear**   | Explore every dimension of the request                  |
+| **4 options per question**     | Comprehensive choices, including creative angles        |
+| **Recommended first**          | Guide users toward the best choice with "(Recommended)" |
+| **Rich descriptions**          | Help users make informed decisions quickly              |
+| **multiSelect where relevant** | Let them pick multiple when choices aren't exclusive    |
+| **Never text menus**           | Always use the tool. No exceptions.                     |
 
-### Multi-Question Patterns
-
-When you need multiple dimensions of input, ask them together:
+### Comprehensive Example
 
 ```python
 AskUserQuestion(questions=[
     {
-        "question": "What authentication approach fits your app?",
-        "header": "Auth",
+        "question": "What's the scope you're envisioning?",
+        "header": "Scope",
         "options": [
-            {"label": "JWT (Recommended)", "description": "Stateless tokens, great for APIs"},
-            {"label": "Sessions", "description": "Server-side state, simpler for web apps"},
-            {"label": "OAuth only", "description": "Social logins, no password management"}
+            {"label": "Production-ready (Recommended)", "description": "Full implementation with tests, error handling, docs"},
+            {"label": "Functional MVP", "description": "Core feature working, polish later"},
+            {"label": "Prototype/spike", "description": "Explore feasibility, throwaway code OK"},
+            {"label": "Just the design", "description": "Architecture and plan only, no code yet"}
         ],
         "multiSelect": False
     },
     {
-        "question": "Which features do you need?",
-        "header": "Features",
+        "question": "What matters most for this feature?",
+        "header": "Priority",
         "options": [
-            {"label": "Email/password login", "description": "Traditional registration flow"},
-            {"label": "Password reset", "description": "Email-based recovery"},
-            {"label": "Remember me", "description": "Persistent sessions across visits"},
-            {"label": "Rate limiting", "description": "Prevent brute force attacks"}
+            {"label": "User experience", "description": "Smooth, intuitive, delightful to use"},
+            {"label": "Performance", "description": "Fast, efficient, scales well"},
+            {"label": "Maintainability", "description": "Clean code, easy to extend later"},
+            {"label": "Ship speed", "description": "Get it working ASAP, refine later"}
         ],
-        "multiSelect": True  # Multiple can be selected
+        "multiSelect": True
+    },
+    {
+        "question": "Any technical constraints I should know?",
+        "header": "Constraints",
+        "options": [
+            {"label": "Must match existing patterns", "description": "Follow conventions already in codebase"},
+            {"label": "Specific tech/library required", "description": "You have preferences on tools to use"},
+            {"label": "Backward compatibility", "description": "Can't break existing functionality"},
+            {"label": "No constraints", "description": "Free to choose the best approach"}
+        ],
+        "multiSelect": True
+    },
+    {
+        "question": "How should I handle edge cases?",
+        "header": "Edge Cases",
+        "options": [
+            {"label": "Comprehensive (Recommended)", "description": "Handle all edge cases, defensive coding"},
+            {"label": "Happy path focus", "description": "Main flow solid, edge cases basic"},
+            {"label": "Fail fast", "description": "Throw errors early, let caller handle"},
+            {"label": "Graceful degradation", "description": "Always return something usable"}
+        ],
+        "multiSelect": False
     }
 ])
 ```
+
+### Domain-Specific Question Banks
+
+**For implementation tasks:**
+
+- Scope (production/MVP/prototype/design-only)
+- Priority (UX/performance/maintainability/speed)
+- Constraints (patterns/tech/compatibility/none)
+- Edge case handling
+
+**For bug fixes:**
+
+- Urgency (critical/important/when-possible)
+- Fix approach (minimal/comprehensive/refactor)
+- Testing expectations
+- Related areas to check
+
+**For reviews:**
+
+- Focus areas (security/performance/quality/all)
+- Depth (quick/standard/comprehensive)
+- Output format (comments/report/both)
+- Action expectations (approve/block/advise)
 
 ---
 
@@ -232,40 +276,81 @@ TaskOutput(task_id="abc123")
 
 Your agents are only as good as your prompts. Invest in clear instructions.
 
-### The Four Elements
+### The WORKER Preamble (Required)
 
-Every agent prompt should include:
+**Every agent prompt MUST start with this preamble:**
+
+```
+CONTEXT: You are a WORKER agent, not an orchestrator.
+
+RULES:
+- Complete ONLY the task described below
+- Use tools directly (Read, Write, Edit, Bash, etc.)
+- Do NOT spawn sub-agents
+- Do NOT call TaskCreate or TaskUpdate
+- Report your results with absolute file paths
+
+TASK:
+[Your specific task here]
+```
+
+This prevents agents from recursively trying to orchestrate.
+
+### The Five Elements
+
+After the preamble, include:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  1. CONTEXT    → What's the bigger picture?                 │
-│  2. SCOPE      → What exactly should this agent do?         │
-│  3. CONSTRAINTS → What rules or patterns to follow?         │
-│  4. OUTPUT     → What should the agent return?              │
+│  1. PREAMBLE   → WORKER context and rules (required!)       │
+│  2. CONTEXT    → What's the bigger picture?                 │
+│  3. SCOPE      → What exactly should this agent do?         │
+│  4. CONSTRAINTS → What rules or patterns to follow?         │
+│  5. OUTPUT     → What should the agent return?              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### Example: Implementation Prompt
 
 ```
-Context: Building a Todo app with Express backend and SQLite.
-The users table exists in server/src/db/database.js.
+CONTEXT: You are a WORKER agent, not an orchestrator.
 
-Task: Create server/src/routes/auth.js with:
+RULES:
+- Complete ONLY the task described below
+- Use tools directly (Read, Write, Edit, Bash, etc.)
+- Do NOT spawn sub-agents
+- Do NOT call TaskCreate or TaskUpdate
+- Report your results with absolute file paths
+
+TASK:
+Create server/src/routes/auth.js with:
 - POST /signup - Create user, hash password with bcrypt, return JWT
 - POST /login - Verify credentials, return JWT
 
-Constraints:
+CONTEXT: Building a Todo app with Express backend and SQLite.
+The users table exists in server/src/db/database.js.
+
+CONSTRAINTS:
 - Use the existing db from database.js
 - JWT secret from process.env.JWT_SECRET
 - Follow existing code patterns
 
-Return: Confirm files created and summarize implementation.
+RETURN: Confirm files created and summarize implementation.
 ```
 
 ### Example: Exploration Prompt
 
 ```
+CONTEXT: You are a WORKER agent, not an orchestrator.
+
+RULES:
+- Complete ONLY the task described below
+- Use tools directly (Read, Write, Edit, Bash, etc.)
+- Do NOT spawn sub-agents
+- Do NOT call TaskCreate or TaskUpdate
+- Report your results with absolute file paths
+
+TASK:
 Find all files related to user authentication.
 
 Look for:
@@ -274,7 +359,7 @@ Look for:
 - Session or token management
 - User model or schema
 
-Return: List of files with brief description of each.
+RETURN: List of files with brief description of each.
 ```
 
 ### Prompt Anti-Patterns

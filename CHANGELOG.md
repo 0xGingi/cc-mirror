@@ -2,6 +2,136 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.5] - 2025-01-05
+
+### Added
+
+- **Role Detection** in orchestration skill
+  - Skill now detects if it's the main orchestrator or a spawned worker
+  - Workers skip orchestration and execute tasks directly
+  - Prevents recursive orchestration chaos
+
+- **Worker Agent Prompt Template**
+  - Required WORKER preamble for all spawned agents
+  - Clear rules: execute task, use tools directly, no sub-agents, no task management
+  - Example prompts included in SKILL.md and references/tools.md
+
+- **Tool Ownership section**
+  - Clear separation: orchestrator tools vs worker tools
+  - Orchestrator: TaskCreate, TaskUpdate, TaskGet, TaskList, AskUserQuestion, Task
+  - Workers: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, LSP
+
+- **Complete task lifecycle** in "What you DO"
+  - Expanded from 5 to 8 steps
+  - Added: Set dependencies, Find ready work (TaskList), Mark complete (TaskUpdate resolved)
+
+### Changed
+
+- **Flow diagram** now shows complete lifecycle
+  - Added "Find Ready Work" step with TaskList
+  - Added "Mark Complete" step with TaskUpdate(resolved)
+  - Shows loop back to find more ready work
+
+- **Agent scaling** is now guidance-based, not quota-based
+  - Replaced "3 agents minimum is non-negotiable"
+  - New table: Quick lookup (1-2), Multi-faceted (2-3), Full feature (4+ swarm)
+  - "Match the swarm to the challenge"
+
+- **Subagent Prompting Guide** in references/tools.md
+  - WORKER preamble now required first element
+  - "Four Elements" → "Five Elements" (added preamble)
+  - All examples updated with preamble
+
+### Fixed
+
+- Agents no longer try to re-orchestrate when spawned
+- Task lifecycle now explicitly includes resolution step
+- Clearer separation between orchestrator and worker responsibilities
+
+## [1.1.4] - 2025-01-05
+
+### Changed
+
+- **Renamed skill**: `multi-agent-orchestrator` → `orchestration`
+  - Shorter, cleaner name
+  - Updated all references in code, tests, and documentation
+
+- **Completely rewritten orchestration skill** with enhanced personality and capabilities
+  - New "Conductor on the trading floor" identity with warmth and swagger
+  - Dynamic personality that adapts to user energy (excited, frustrated, curious, etc.)
+  - Strict "Iron Law" enforcement: orchestrator NEVER uses Read/Write/Edit/Bash directly
+  - Minimum 3 agents per request, swarm everything philosophy
+  - Rich milestone celebrations and progress updates
+  - Signature branding (`─── ◈ Orchestrating ──`)
+
+- **Maximal AskUserQuestion guidance**
+  - Always use 4 questions (the max) when gathering context
+  - Always use 4 options per question (the max)
+  - Rich descriptions with no length limit - explain trade-offs, implications, examples
+  - "Be a consultant, not a waiter" philosophy
+
+### Added
+
+- **Auto-approve orchestration skill**: `Skill(orchestration)` added to `permissions.allow` when team mode enabled
+  - No more permission prompts to load the skill
+
+- **Team pack system prompt**: `system-prompt-orchestration-skill.md`
+  - Instructs loading orchestration skill before any response
+
+- **Skill tool override**: `tool-description-skill.md`
+  - CRITICAL instruction to load orchestration skill first in every conversation
+
+- **Domain expertise routing** preserved with rich reference files:
+  - `references/patterns.md` - Fan-Out, Pipeline, Map-Reduce, Speculative patterns
+  - `references/tools.md` - Enhanced tool usage with maximal questioning philosophy
+  - `references/examples.md` - Complete workflow examples
+  - `references/guide.md` - User-facing documentation
+  - 8 domain-specific guides (software-development, code-review, testing, etc.)
+
+### Fixed
+
+- Orchestrator now consistently delegates to agents instead of doing work directly
+- AskUserQuestion examples now show comprehensive 4-question, 4-option patterns
+
+## [1.1.3] - 2025-01-04
+
+### Fixed
+
+- **useEffect infinite loop** when toggling team mode on existing variants
+  - Added ref guards to all async TUI hooks to prevent concurrent execution
+  - Stabilized `refreshVariants` callback with `useCallback`
+  - Hooks affected: `useTeamModeToggle`, `useVariantUpdate`, `useVariantCreate`, `useModelConfig`, `useUpdateAll`
+
+- **Team mode visibility** in configuration/summary screens
+  - TUI SummaryScreen now shows team mode status before variant creation
+  - CLI `printSummary` now shows team mode in all modes (quick, interactive, non-interactive)
+  - Provider-specific prompt pack routing info (zai-cli vs MCP routing)
+
+- **Skill tool examples mismatch** - Added skill clarification spec to prevent confusion
+  - Prompt pack now clarifies that skill examples (commit, review-pr, pdf) are illustrative only
+  - Directs users to check `<available_skills>` for actually installed skills
+
+### Added
+
+- **Team Pack prompt files** for enhanced team mode guidance
+  - `task-management-note.md` - Clarifies TodoWrite deprecation vs Task* tools in team mode
+  - `tasklist.md`, `taskupdate.md`, `task-extra-notes.md` - Enhanced Task* tool descriptions
+
+- **TeamModeScreen** TUI component for team mode selection during variant creation
+
+- **Comprehensive tests**
+  - `test/e2e/blocked-tools.test.ts` - Tests for blocked tools configuration
+  - `test/e2e/team-mode.test.ts` - E2E tests for team mode enable/disable/toggle
+  - `test/provider-matrix.test.ts` - Provider feature matrix validation
+  - `test/tui/TeamModeScreen.test.ts` - TeamModeScreen component tests
+  - `test/tui/ModelConfigScreen.test.ts` - ModelConfigScreen component tests
+
+### Changed
+
+- Removed deprecated `promptPackMode` parameter (maximal mode removed, minimal is now default)
+- Shell env option now only shown for zai provider in summary screens
+- Team mode description now includes details: "on (orchestrator skill, TodoWrite blocked)"
+
 ## [1.1.2] - 2025-01-04
 
 ### Fixed

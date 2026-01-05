@@ -108,9 +108,9 @@ Each cc-mirror variant has completely isolated task storage via `CLAUDE_CONFIG_D
 
 ---
 
-## 🎯 Multi-Agent Orchestrator Skill
+## 🎯 Orchestration Skill
 
-When team mode is enabled, cc-mirror automatically installs a **multi-agent orchestrator skill** that teaches Claude how to effectively coordinate work using the team mode tools.
+When team mode is enabled, cc-mirror automatically installs an **orchestration skill** that teaches Claude how to effectively coordinate work using the team mode tools.
 
 ### The Conductor Identity
 
@@ -184,7 +184,7 @@ Milestone celebrations:
 ### Skill Location
 
 ```
-~/.cc-mirror/<variant>/config/skills/multi-agent-orchestrator/
+~/.cc-mirror/<variant>/config/skills/orchestration/
 ├── SKILL.md              # Identity, philosophy, core workflow
 └── references/
     ├── patterns.md       # All patterns with visual diagrams
@@ -193,6 +193,30 @@ Milestone celebrations:
     ├── guide.md          # User-facing explanations
     └── domains/          # Domain-specific guidance (8 domains)
 ```
+
+---
+
+## 📦 Team Pack
+
+When team mode is enabled, cc-mirror also installs **Team Pack** — enhanced prompt files and toolset configuration.
+
+### What Team Pack Does
+
+1. **Copies prompt files** to `tweakcc/system-prompts/`:
+   - `tool-description-tasklist.md` - TaskList tool guidance
+   - `tool-description-taskupdate.md` - TaskUpdate tool guidance
+   - `agent-prompt-task-tool-extra-notes.md` - Task tool notes
+
+2. **Configures toolset** to block TodoWrite:
+   - Creates a 'team' toolset with `blockedTools: ['TodoWrite', ...]`
+   - Merges any provider-specific blocked tools (e.g., Z.ai's WebSearch)
+   - Sets 'team' as the default toolset
+
+### Why Block TodoWrite?
+
+Team mode provides `TaskCreate`, `TaskGet`, `TaskUpdate`, and `TaskList` as the primary task management tools. TodoWrite is blocked to encourage use of the more capable team tools for multi-agent coordination.
+
+---
 
 ### Managed vs User Skills
 
