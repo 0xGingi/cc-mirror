@@ -138,6 +138,7 @@ mclaude      # Launch Mirror Claude variant
 | **🎨 Brand Themes**        | Custom color schemes per provider via [tweakcc](https://github.com/Piebald-AI/tweakcc) |
 | **📝 Prompt Packs**        | Enhanced system prompts for Z.ai and MiniMax                                           |
 | **🤖 Team Mode**           | Multi-agent collaboration with shared task management                                  |
+| **📋 Tasks CLI**           | Manage, archive, and visualize task dependencies from command line                     |
 | **🔄 One-Command Updates** | Update all variants when Claude Code releases                                          |
 
 ---
@@ -146,12 +147,22 @@ mclaude      # Launch Mirror Claude variant
 
 ```bash
 # Create & manage variants
-cc-mirror create              # Full configuration wizard
-cc-mirror quick [options]     # Fast setup with defaults
-cc-mirror list                # List all variants
-cc-mirror update [name]       # Update one or all variants
-cc-mirror remove <name>       # Delete a variant
-cc-mirror doctor              # Health check all variants
+npx cc-mirror create              # Full configuration wizard
+npx cc-mirror quick [options]     # Fast setup with defaults
+npx cc-mirror list                # List all variants
+npx cc-mirror update [name]       # Update one or all variants
+npx cc-mirror remove <name>       # Delete a variant
+npx cc-mirror doctor              # Health check all variants
+
+# Task management (team mode)
+npx cc-mirror tasks               # List open tasks
+npx cc-mirror tasks show <id>     # Show task details
+npx cc-mirror tasks create        # Create new task
+npx cc-mirror tasks update <id>   # Update task
+npx cc-mirror tasks delete <id>   # Delete task
+npx cc-mirror tasks archive <id>  # Archive task
+npx cc-mirror tasks clean         # Bulk cleanup
+npx cc-mirror tasks graph         # Visualize dependencies
 
 # Launch your variant
 zai                           # Run Z.ai variant
@@ -200,13 +211,53 @@ Enable multi-agent collaboration with shared task management:
 
 ```bash
 # Enable on any variant
-cc-mirror create --provider zai --name zai-team --enable-team-mode
+npx cc-mirror create --provider zai --name zai-team --enable-team-mode
 
 # Mirror Claude has team mode by default
-cc-mirror quick --provider mirror --name mclaude
+npx cc-mirror quick --provider mirror --name mclaude
 ```
 
 Team mode enables: `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList` tools plus an **orchestrator skill** that teaches Claude effective multi-agent coordination patterns.
+
+### Tasks CLI (v1.4.0+)
+
+Manage team tasks from the command line:
+
+```bash
+# List open tasks
+npx cc-mirror tasks
+
+# View across all teams
+npx cc-mirror tasks --all
+
+# Create and update tasks
+npx cc-mirror tasks create --subject "Add auth" --description "JWT implementation"
+npx cc-mirror tasks update 5 --status resolved --add-comment "Done"
+
+# Cleanup resolved tasks
+npx cc-mirror tasks clean --resolved --dry-run
+npx cc-mirror tasks clean --resolved --force
+
+# Archive instead of delete (preserves task history)
+npx cc-mirror tasks archive 5
+
+# Visualize dependency graph
+npx cc-mirror tasks graph
+```
+
+### Project-Scoped Tasks (v1.2.0+)
+
+Tasks are automatically scoped by project folder — no cross-project pollution:
+
+```bash
+# Run in different project folders - tasks stay isolated
+cd ~/projects/api && mc      # Team: mc-api
+cd ~/projects/frontend && mc # Team: mc-frontend
+
+# Multiple teams in the same project
+TEAM=backend mc   # Team: mc-myproject-backend
+TEAM=frontend mc  # Team: mc-myproject-frontend
+```
 
 → [Team Mode Documentation](docs/features/team-mode.md)
 
