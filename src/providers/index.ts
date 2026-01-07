@@ -91,6 +91,7 @@ const PROVIDERS: Record<string, ProviderTemplate> = {
     baseUrl: 'https://nano-gpt.com/api',
     env: {
       API_TIMEOUT_MS: DEFAULT_TIMEOUT_MS,
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: 1,
       CC_MIRROR_SPLASH: 1,
       CC_MIRROR_PROVIDER_LABEL: 'NanoGPT',
       CC_MIRROR_SPLASH_STYLE: 'nanogpt',
